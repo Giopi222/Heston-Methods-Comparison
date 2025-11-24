@@ -9,14 +9,14 @@ def heston_price_fft(S, K, T, r, v0, kappa, theta, sigma_v, rho,
     # risk-neutral char funct of ln(S_T)
     def phi(u):
         a = kappa * theta
-        b_h = kappa
-        d = np.sqrt((rho*sigma_v*i*u - b_h)**2 + (sigma_v**2)*(i*u + u**2))
-        g = (b_h - rho*sigma_v*i*u + d) / (b_h - rho*sigma_v*i*u - d)
+        kappa = kappa
+        d = np.sqrt((rho*sigma_v*i*u - kappa)**2 + (sigma_v**2)*(i*u + u**2))
+        g = (kappa - rho*sigma_v*i*u + d) / (kappa - rho*sigma_v*i*u - d)
 
         C = (r - q)*i*u*T + (a/(sigma_v**2)) * (
-            (b_h - rho*sigma_v*i*u + d)*T - 2*np.log((1 - g*np.exp(d*T))/(1 - g))
+            (kappa - rho*sigma_v*i*u + d)*T - 2*np.log((1 - g*np.exp(d*T))/(1 - g))
         )
-        D = ((b_h - rho*sigma_v*i*u + d)/(sigma_v**2)) * (
+        D = ((kappa - rho*sigma_v*i*u + d)/(sigma_v**2)) * (
             (1 - np.exp(d*T))/(1 - g*np.exp(d*T))
         )
         return np.exp(C + D*v0 + i*u*np.log(S))
