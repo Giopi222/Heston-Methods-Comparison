@@ -31,13 +31,13 @@ def heston_mc_qe_price(
         
         # === Normal paths ===
         v_next = _qe_step(v, Z1, U, theta, kappa, sigma_v, ed)
-        S = _stock_step(S, v, v_next, Z1, Z2, r, q, rho, dt)
+        S = _stock_step(S, v, v_next, Z2, r, q, rho, kappa, theta, sigma_v, dt)
         v = v_next
         
         # === Antithetic paths ===
         if antithetic:
             v_next_a = _qe_step(v_a, -Z1, 1.0 - U, theta, kappa, sigma_v, ed)
-            S_a = _stock_step(S_a, v_a, v_next_a, -Z1, -Z2, r, q, rho, dt)
+            S_a = _stock_step(S_a, v_a, v_next_a, -Z2, r, q, rho, kappa, theta, sigma_v, dt)
             v_a = v_next_a
     
     # Compute payoffs
@@ -56,7 +56,7 @@ def heston_mc_qe_price(
         combined_payoff = 0.5 * (payoff + payoff_a)
         m_pay = np.mean(combined_payoff)
         std_pay = np.std(combined_payoff, ddof=1)
-        n_eff = 2 * n
+        n_eff = n   # corretto: il numero di campioni indipendenti è n (una media per coppia)
     else:
         m_pay = np.mean(payoff)
         std_pay = np.std(payoff, ddof=1)
@@ -108,20 +108,26 @@ def _qe_step(v_curr, Z1, U, theta, kappa, sigma_v, ed):
     return v_next
 
 
-def _stock_step(S_curr, v_curr, v_next, Z1, Z2, r, q, rho, dt):
+def _stock_step(S_curr, v_curr, v_next, Z2, r, q, rho, kappa, theta, sigma_v, dt):
     """
-    Stock price evolution with correlated Brownian motion.
+    Stock price evolution (Andersen QE, leverage-corrected).
+    Uses the conditional expectation of the integrated variance and the
+    leverage correction term to ensure the risk-neutral martingale.
     """
-    # Average variance over step
-    v_bar = 0.5 * (v_curr + v_next)
-    
-    # Correlated random variate
-    Zs = rho * Z1 + np.sqrt(1.0 - rho**2) * Z2
-    
-    # Log-normal step
+    # Conditional mean of the integrated variance over the step
+    ed = np.exp(-kappa * dt)
+    I1 = theta * dt + (v_curr - theta) * (1.0 - ed) / kappa
+    I1 = np.maximum(I1, 0.0)
+
+    # Leverage correction term (exact from variance increment identity)
+    drift_corr = (rho / sigma_v) * (v_next - v_curr - kappa * (theta - v_curr) * dt)
+
+    # Independent normal variate for the orthogonal component
     S_next = S_curr * np.exp(
-        (r - q) * dt - 0.5 * v_bar * dt + 
-        np.sqrt(np.maximum(v_bar, 0.0) * dt) * Zs
+        (r - q) * dt
+        - 0.5 * I1
+        + drift_corr
+        + np.sqrt(np.maximum((1.0 - rho**2) * I1, 0.0)) * Z2
     )
-    
+
     return S_next
