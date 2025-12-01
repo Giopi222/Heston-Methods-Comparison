@@ -109,25 +109,17 @@ def _qe_step(v_curr, Z1, U, theta, kappa, sigma_v, ed):
 
 
 def _stock_step(S_curr, v_curr, v_next, Z2, r, q, rho, kappa, theta, sigma_v, dt):
-    """
-    Stock price evolution (Andersen QE, leverage-corrected).
-    Uses the conditional expectation of the integrated variance and the
-    leverage correction term to ensure the risk-neutral martingale.
-    """
-    # Conditional mean of the integrated variance over the step
-    ed = np.exp(-kappa * dt)
-    I1 = theta * dt + (v_curr - theta) * (1.0 - ed) / kappa
+    # integrale della varianza: stima pathwise (trapezio)
+    I1 = 0.5 * (v_curr + v_next) * dt
     I1 = np.maximum(I1, 0.0)
 
-    # Leverage correction term (exact from variance increment identity)
-    drift_corr = (rho / sigma_v) * (v_next - v_curr - kappa * (theta - v_curr) * dt)
+    # Andersen QE II
+    drift_corr = (rho / sigma_v) * ( (v_next - v_curr) - kappa * (theta - v_curr) * dt )
 
-    # Independent normal variate for the orthogonal component
     S_next = S_curr * np.exp(
         (r - q) * dt
         - 0.5 * I1
         + drift_corr
         + np.sqrt(np.maximum((1.0 - rho**2) * I1, 0.0)) * Z2
     )
-
     return S_next
