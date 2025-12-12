@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.stats import quad
+from scipy.integrate import quad
 
 def heston_integral(S, K, T, r, v0, kappa, theta, sigma_v, rho, option_type="call", q=0.0,
                  int_upper=150.0):
