@@ -1,7 +1,9 @@
 # Heston-Methods-Comparison
 
 This project compares three methods for pricing European call options under the Heston model: the Carr–Madan FFT approach, Monte Carlo simulation using the Quadratic Exponential (QE) scheme, and a neural-network-based approximation.
-The datasets are synthetic and generated via Latin Hypercube Sampling (LHT), ensuring efficient coverage of the model’s parameter space. This choice reflects the purpose of the project, which is to explore the behavior, strengths, and limitations of the different pricing approaches rather than to declare a definitive “winner”.
+The datasets are synthetic and generated via Latin Hypercube Sampling (LHT), ensuring efficient coverage of the model’s parameter space. This choice reflects the purpose of the project, which is to explore the behavior, strengths, and limitations of the different pricing approaches rather than to declare a definitive “winner”. 
+
+It is worth noting that for standard European options, the Heston model admits semi-analytical solutions (like the FFT) that render computationally intensive methods (such as MC and NN) redundant in practice. Therefore, the use of European options in this study is strictly intended as a controlled validation framework, allowing us to benchmark the alternative methods against a reliable exact solution before extending them to more complex derivatives.
 
 The three techniques are evaluated in terms of execution time and pricing accuracy, using the FFT solution as the reference benchmark.
 The results show that the neural network is by far the fastest method (around four times faster than FFT), at the cost of a higher mean error and larger error variance.
