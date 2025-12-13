@@ -8,12 +8,11 @@ def heston_price_fft(S, K, T, r, v0, kappa, theta, sigma_v, rho,
 
     # risk-neutral char funct of ln(S_T)
     def phi(u):
-        a = kappa * theta
         b_h = kappa
         d = np.sqrt((rho*sigma_v*i*u - b_h)**2 + (sigma_v**2)*(i*u + u**2))
         g = (b_h - rho*sigma_v*i*u + d) / (b_h - rho*sigma_v*i*u - d)
 
-        C = (r - q)*i*u*T + (a/(sigma_v**2)) * (
+        C = (r - q)*i*u*T + ((kappa * theta)/(sigma_v**2)) * (
             (b_h - rho*sigma_v*i*u + d)*T - 2*np.log((1 - g*np.exp(d*T))/(1 - g))
         )
         D = ((b_h - rho*sigma_v*i*u + d)/(sigma_v**2)) * (
@@ -34,7 +33,7 @@ def heston_price_fft(S, K, T, r, v0, kappa, theta, sigma_v, rho,
     uj = u - i*(alpha + 1.0)
     numerator = np.exp(-r*T) * phi(uj)
     denominator = (alpha**2 + alpha - u**2) + i*(2*alpha + 1.0)*u
-    denominator = np.where(np.abs(denominator) < 1e-14, 1e-14, denominator)  # guardia numerica
+    denominator = np.where(np.abs(denominator) < 1e-14, 1e-14, denominator)  
     psi = numerator / denominator
 
     lam = 2.0*np.pi / (N * eta)                

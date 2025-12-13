@@ -5,12 +5,11 @@ def heston_integral(S, K, T, r, v0, kappa, theta, sigma_v, rho, option_type="cal
                  int_upper=150.0):
     
     i = 1j
-    a = kappa * theta
     x0 = np.log(S)
 
     def char_func(phi, Pnum):
         # little trap
-        u = 0.5 if Pnum == 1 else -0.5 # P_1 e P_2
+        u = 0.5 if Pnum == 1 else -0.5 # P_1 and P_2
         b = kappa - rho * sigma_v if Pnum == 1 else kappa
 
         # d and g 
@@ -26,7 +25,7 @@ def heston_integral(S, K, T, r, v0, kappa, theta, sigma_v, rho, option_type="cal
         one_minus_gp = np.where(np.abs(one_minus_gp) < eps, eps, one_minus_gp)
         one_minus_gp_exp = np.where(np.abs(one_minus_gp_exp) < eps, eps, one_minus_gp_exp)
 
-        C = (r - q) * i * phi * T + (a / (sigma_v**2)) * (
+        C = (r - q) * i * phi * T + ((kappa * theta) / (sigma_v**2)) * (
             (b - rho*sigma_v*i*phi + d) * T - 2.0 * np.log(one_minus_gp_exp / one_minus_gp)
         )
         D = ((b - rho*sigma_v*i*phi + d) / (sigma_v**2)) * (

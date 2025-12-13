@@ -56,7 +56,7 @@ def heston_mc_qe_price(
         combined_payoff = 0.5 * (payoff + payoff_a)
         m_pay = np.mean(combined_payoff)
         std_pay = np.std(combined_payoff, ddof=1)
-        n_eff = n   # corretto: il numero di campioni indipendenti è n (una media per coppia)
+        n_eff = n   
     else:
         m_pay = np.mean(payoff)
         std_pay = np.std(payoff, ddof=1)
@@ -70,7 +70,7 @@ def heston_mc_qe_price(
 
 def _qe_step(v_curr, Z1, U, theta, kappa, sigma_v, ed):
     """
-    QE scheme for variance evolution (Andersen 2008).
+    QE scheme for variance evolution (Andersen)
     """
     # Conditional moments
     m = theta + (v_curr - theta) * ed
@@ -109,7 +109,7 @@ def _qe_step(v_curr, Z1, U, theta, kappa, sigma_v, ed):
 
 
 def _stock_step(S_curr, v_curr, v_next, Z2, r, q, rho, kappa, theta, sigma_v, dt):
-    # integrale della varianza: stima pathwise (trapezio)
+    # pathwise estimation
     I1 = 0.5 * (v_curr + v_next) * dt
     I1 = np.maximum(I1, 0.0)
 
