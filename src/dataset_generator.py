@@ -8,8 +8,8 @@ def sample_heston_lhs(
     moneyness_bounds=(0.6, 1.4),
     T_bounds=(0.09, 1.40),
     r_bounds=(-0.01, 0.10),
-    S0: int = 105,
-    q: int = 0
+    S0: float = 105.0,
+    q: float = 0.0
 ) -> pd.DataFrame:
     """
     Generate n_samples plausible Heston parameters via Latin Hypercube Sampling (LHS),
@@ -17,7 +17,7 @@ def sample_heston_lhs(
 
     Constraints (as implemented by bounds below):
       - v0     in [0.01, 0.09]
-      - kappa  in [0.50, 5.00] # not sampled --> m
+      - kappa  in [0.50, 5.00] 
       - theta  in [0.01, 0.09]
       - sigma_v in [0.10, 1.00]
       - rho    in [-0.95, -0.10]
@@ -46,7 +46,7 @@ def sample_heston_lhs(
     # Repeat in batches until we have enough valid samples
     while len(collected) < n_samples and attempt < 20:
         # Oversample to compensate for filtering
-        batch_size = int(np.ceil((n_samples - len(collected)) * 2.0))
+        batch_size = int(np.ceil((n_samples - len(collected)) * 3.0))
         sampler = qmc.LatinHypercube(d=8, seed=seed + attempt)
         U = sampler.random(batch_size)
         X = qmc.scale(U, l_bounds, u_bounds)  # shape [batch_size, 8]
@@ -82,6 +82,4 @@ def sample_heston_lhs(
     df["K"]  = (df["m"] * S0).astype(float)
     df["q"]  = q
    
-    df = df[["S0","K","m","T","r","q","v0","kappa","theta","sigma_v","rho"]]
-
-    return df
+    return df[["S0","K","m","T","r","q","v0","kappa","theta","sigma_v","rho"]]
