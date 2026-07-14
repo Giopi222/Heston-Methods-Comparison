@@ -12,12 +12,12 @@ def heston_integral(S, K, T, r, v0, kappa, theta, sigma_v, rho, option_type="cal
         u = 0.5 if Pnum == 1 else -0.5 # P_1 and P_2
         b = kappa - rho * sigma_v if Pnum == 1 else kappa
 
-        # d and g 
+        # d and g (trap-safe: -d root and e^{-dT}, Albrecher et al.)
         d = np.sqrt((rho*sigma_v*i*phi - b)**2 - (sigma_v**2)*(2*u*i*phi - phi**2))
-        gp = (b - rho*sigma_v*i*phi + d) / (b - rho*sigma_v*i*phi - d)
+        gp = (b - rho*sigma_v*i*phi - d) / (b - rho*sigma_v*i*phi + d)
 
         # avoid |gp| ~ 1
-        exp_dT = np.exp(d * T)
+        exp_dT = np.exp(-d * T)
         one_minus_gp = 1.0 - gp
         one_minus_gp_exp = 1.0 - gp * exp_dT
 
@@ -26,9 +26,9 @@ def heston_integral(S, K, T, r, v0, kappa, theta, sigma_v, rho, option_type="cal
         one_minus_gp_exp = np.where(np.abs(one_minus_gp_exp) < eps, eps, one_minus_gp_exp)
 
         C = (r - q) * i * phi * T + ((kappa * theta) / (sigma_v**2)) * (
-            (b - rho*sigma_v*i*phi + d) * T - 2.0 * np.log(one_minus_gp_exp / one_minus_gp)
+            (b - rho*sigma_v*i*phi - d) * T - 2.0 * np.log(one_minus_gp_exp / one_minus_gp)
         )
-        D = ((b - rho*sigma_v*i*phi + d) / (sigma_v**2)) * (
+        D = ((b - rho*sigma_v*i*phi - d) / (sigma_v**2)) * (
             (1.0 - exp_dT) / one_minus_gp_exp
         )
         return np.exp(C + D * v0 + i * phi * x0)

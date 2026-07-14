@@ -96,8 +96,8 @@ def _qe_step(v_curr, Z1, U, theta, kappa, sigma_v, ed):
     p = (psi[idx2] - 1.0) / (psi[idx2] + 1.0)
     p = np.clip(p, 0.0, 1.0 - 1e-14)
     beta = (1.0 - p) / m[idx2]
-    v_next_2 = np.where(U[idx2] <= p, 0.0, 
-                        -np.log((1.0 - p) / (1.0 - U[idx2])) / beta)
+    v_next_2 = np.where(U[idx2] <= p, 0.0,
+                        np.log((1.0 - p) / (1.0 - U[idx2])) / beta)
     
     # Combine cases
     v_next = np.empty_like(v_curr)

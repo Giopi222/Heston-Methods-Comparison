@@ -7,16 +7,18 @@ def heston_price_fft(S, K, T, r, v0, kappa, theta, sigma_v, rho,
     i = 1j
 
     # risk-neutral char funct of ln(S_T)
+    # trap-safe formulation (Albrecher et al.): -d root and e^{-dT},
+    # equivalent to Heston's original but stable w.r.t. the complex log branch
     def phi(u):
         b_h = kappa
         d = np.sqrt((rho*sigma_v*i*u - b_h)**2 + (sigma_v**2)*(i*u + u**2))
-        g = (b_h - rho*sigma_v*i*u + d) / (b_h - rho*sigma_v*i*u - d)
+        g = (b_h - rho*sigma_v*i*u - d) / (b_h - rho*sigma_v*i*u + d)
 
         C = (r - q)*i*u*T + ((kappa * theta)/(sigma_v**2)) * (
-            (b_h - rho*sigma_v*i*u + d)*T - 2*np.log((1 - g*np.exp(d*T))/(1 - g))
+            (b_h - rho*sigma_v*i*u - d)*T - 2*np.log((1 - g*np.exp(-d*T))/(1 - g))
         )
-        D = ((b_h - rho*sigma_v*i*u + d)/(sigma_v**2)) * (
-            (1 - np.exp(d*T))/(1 - g*np.exp(d*T))
+        D = ((b_h - rho*sigma_v*i*u - d)/(sigma_v**2)) * (
+            (1 - np.exp(-d*T))/(1 - g*np.exp(-d*T))
         )
         return np.exp(C + D*v0 + i*u*np.log(S))
 
